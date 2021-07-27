@@ -53,6 +53,12 @@ main() {
             echo "exit 1" | tee -a "$log_file"
             exit 1
         fi
+
+        #--- check .zshrc.arthurnavah
+        principalContent=$(cat ~/.zshrc)
+        if [[ "$principalContent" != "source ~/.zshrc.arthurnavah"* ]]; then
+            echo "source ~/.zshrc.arthurnavah" >>~/.zshrc
+        fi
     fi
     if [ "$update_console" == 1 ]; then
         requiredSudoCommands snap apt

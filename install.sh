@@ -41,7 +41,8 @@ main() {
         requiredSudoCommands apt npm apt-key tee add-apt-repository
 
         #--- check node version
-        nodeVersion="$(node --version | cut -d'.' -f1)"; nodeVersion="${nodeVersion#'v'}"
+        nodeVersion="$(node --version | cut -d'.' -f1)"
+        nodeVersion="${nodeVersion#'v'}"
         if [ "$nodeVersion" -lt 11 ]; then
             echo "[Editor Installer Error] : NodeJs version must be higher than v11.0.0 ( >= v12.0.0 )" | tee -a "$log_file"
             echo "exit 1" | tee -a "$log_file"
@@ -59,10 +60,16 @@ main() {
             echo "exit 1" | tee -a "$log_file"
             exit 1
         fi
+
+        #--- check .zshrc.arthurnavah
+        principalContent=$(cat ~/.zshrc)
+        if [[ "$principalContent" != "source ~/.zshrc.arthurnavah"* ]]; then
+            echo "source ~/.zshrc.arthurnavah" >>~/.zshrc
+        fi
     fi
     if [ "$install_console" == 1 ]; then
         requiredCommands curl wget git
-        requiredSudoCommands snap apt 
+        requiredSudoCommands snap apt
     fi
 
     echo ""
@@ -93,30 +100,30 @@ main() {
 # get options
 optstring=":n"
 while getopts ${optstring} arg; do
-  case ${arg} in
-    n) 
+    case ${arg} in
+    n)
         no_providers=1
         ;;
-    ?) 
-        echo "[Installer Error] : Invalid option:"  | tee -a "$log_file"
+    ?)
+        echo "[Installer Error] : Invalid option:" | tee -a "$log_file"
         echo -e "\t$OPTARG" | tee -a "$log_file"
         echo "exit 1" | tee -a "$log_file"
         exit 1
         ;;
-  esac
+    esac
 done
 # excluding opts from the arguments
 for a; do
-   shift
-   case $a in
-   -*) opts+=("$a");;
-   *) set -- "$@" "$a";;
-   esac
+    shift
+    case $a in
+    -*) opts+=("$a") ;;
+    *) set -- "$@" "$a" ;;
+    esac
 done
 # set vars with arguments
 for p in "$@"; do
     eval install_"$p"=1
-done;
+done
 if [ "$#" == 0 ]; then
     install_editor=1
 fi
@@ -128,9 +135,9 @@ requiredCommands() {
         if ! p_tmp="$(type -p "$p")" || [[ -z $p_tmp ]]; then
             concatMissingCommand+="\t$p\n"
         fi
-    done;
+    done
 
-    if [[ -n $concatMissingCommand ]]; then 
+    if [[ -n $concatMissingCommand ]]; then
         echo "[Installer Error] : Commands are required:" | tee -a "$log_file"
         echo -e "$concatMissingCommand" | tee -a "$log_file"
         echo "exit 1" | tee -a "$log_file"
@@ -145,9 +152,9 @@ requiredSudoCommands() {
         if ! p_tmp="$(sudo which "$p")" || [[ -z $p_tmp ]]; then
             concatMissingCommand+="\tsudo $p\n"
         fi
-    done;
+    done
 
-    if [[ -n $concatMissingCommand ]]; then 
+    if [[ -n $concatMissingCommand ]]; then
         echo "[Installer Error] : Commands with SUDO are required:" | tee -a "$log_file"
         echo -e "$concatMissingCommand" | tee -a "$log_file"
         echo "exit 1" | tee -a "$log_file"
@@ -157,7 +164,7 @@ requiredSudoCommands() {
 
 # installEditor install editor
 installEditor() {
-    echo "dark" > ~/.mode | tee -a "$log_file"
+    echo "dark" >~/.mode | tee -a "$log_file"
 
     sudo apt install -y curl git xclip ripgrep silversearcher-ag | tee -a "$log_file"
 
@@ -178,7 +185,7 @@ installEditor() {
     fi
 
     requiredCommands curl git
-    requiredSudoCommands apt 
+    requiredSudoCommands apt
 
     echo "" | tee -a "$log_file"
     echo "[Editor Installer] : Removing current version of Vim and NeoVim..." | tee -a "$log_file"
@@ -220,7 +227,7 @@ installEditor() {
         echo "[Editor Installer] : Installing Providers for NeoVim..." | tee -a "$log_file"
         sudo npm install -g neovim | tee -a "$log_file"
         sudo gem install neovim | tee -a "$log_file"
-        pip install -U pynvim  | tee -a "$log_file"
+        pip install -U pynvim | tee -a "$log_file"
         python2 -m pip install --user --upgrade pynvim | tee -a "$log_file"
         pip3 install -U pynvim | tee -a "$log_file"
         python3 -m pip install --user --upgrade pynvim | tee -a "$log_file"
@@ -260,7 +267,7 @@ installEditor() {
 
     echo "" | tee -a "$log_file"
     echo "[Editor Installer] : Install Vim Plugin Manager..." | tee -a "$log_file"
-    curl https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh 2>/dev/null > ~/.vim/bundles/installer.sh | tee -a "$log_file"
+    curl https://raw.githubusercontent.com/Shougo/dein.vim/master/bin/installer.sh 2>/dev/null >~/.vim/bundles/installer.sh | tee -a "$log_file"
     sh ~/.vim/bundles/installer.sh ~/.vim/bundles | tee -a "$log_file"
     echo "[Editor Installer] : ----------------------" | tee -a "$log_file"
 
@@ -282,7 +289,7 @@ installEditor() {
 
 # installConsole install console and tools
 installConsole() {
-    echo "dark" > ~/.mode | tee -a "$log_file"
+    echo "dark" >~/.mode | tee -a "$log_file"
 
     sudo snap install alacritty --classic | tee -a "$log_file"
 
@@ -303,7 +310,7 @@ installConsole() {
 
     echo "" | tee -a "$log_file"
     echo "[Console Installer] : Downloading Tmux Plugin Manager..." | tee -a "$log_file"
-    sudo rm -r ~/.tmux/plugins  | tee -a "$log_file"
+    sudo rm -r ~/.tmux/plugins | tee -a "$log_file"
     git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm 1>/dev/null | tee -a "$log_file"
 
     echo "[Console Installer] : - Copying configuration Alacritty..." | tee -a "$log_file"
@@ -331,7 +338,7 @@ installConsole() {
     git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/plugins/zsh-autosuggestions | tee -a "$log_file"
 
     echo "[Console Installer] : - Copying configuration Zsh..." | tee -a "$log_file"
-    cp ./config/.zshrc ~/.  | tee -a "$log_file"
+    cp ./config/.zshrc ~/. | tee -a "$log_file"
     echo "[Console Installer] : ----------------------" | tee -a "$log_file"
 
     echo "" | tee -a "$log_file"
